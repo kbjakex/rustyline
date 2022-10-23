@@ -11,7 +11,7 @@ struct MaskingHighlighter {
 }
 
 impl Highlighter for MaskingHighlighter {
-    fn highlight<'l>(&self, line: &'l str, _pos: usize) -> Cow<'l, str> {
+    fn highlight<'l>(&self, line: &'l str, _pos: usize, _submit: bool) -> Cow<'l, str> {
         use unicode_width::UnicodeWidthStr;
         if self.masking {
             Owned("*".repeat(line.width()))
