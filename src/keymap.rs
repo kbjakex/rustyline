@@ -369,6 +369,7 @@ impl Invoke for &str {
 }
 
 pub trait Refresher {
+    fn submit_line(&mut self) -> Result<()>;
     /// Rewrite the currently edited line accordingly to the buffer content,
     /// cursor position, and number of columns of the terminal.
     fn refresh_line(&mut self) -> Result<()>;

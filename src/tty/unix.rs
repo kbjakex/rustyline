@@ -953,6 +953,7 @@ impl Renderer for PosixRenderer {
         old_layout: &Layout,
         new_layout: &Layout,
         highlighter: Option<&dyn Highlighter>,
+        submit: bool,
     ) -> Result<()> {
         use std::fmt::Write;
         self.buffer.clear();
@@ -969,7 +970,7 @@ impl Renderer for PosixRenderer {
                 .push_str(&highlighter.highlight_prompt(prompt, default_prompt));
             // display the input line
             self.buffer
-                .push_str(&highlighter.highlight(line, line.pos()));
+                .push_str(&highlighter.highlight(line, line.pos(), submit));
         } else {
             // display the prompt
             self.buffer.push_str(prompt);
@@ -1542,7 +1543,7 @@ mod test {
         let new_layout = out.compute_layout(prompt_size, default_prompt, &line, None);
         assert_eq!(Position { col: 1, row: 1 }, new_layout.cursor);
         assert_eq!(new_layout.cursor, new_layout.end);
-        out.refresh_line(prompt, &line, None, &old_layout, &new_layout, None)
+        out.refresh_line(prompt, &line, None, &old_layout, &new_layout, None, true)
             .unwrap();
         #[rustfmt::skip]
         assert_eq!(

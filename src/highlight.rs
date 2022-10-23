@@ -17,8 +17,8 @@ pub trait Highlighter {
     ///
     /// For example, you can implement
     /// [blink-matching-paren](https://www.gnu.org/software/bash/manual/html_node/Readline-Init-File-Syntax.html).
-    fn highlight<'l>(&self, line: &'l str, pos: usize) -> Cow<'l, str> {
-        let _ = pos;
+    fn highlight<'l>(&self, line: &'l str, pos: usize, submit: bool) -> Cow<'l, str> {
+        let _ = (pos, submit);
         Borrowed(line)
     }
     /// Takes the `prompt` and
@@ -62,8 +62,8 @@ pub trait Highlighter {
 impl Highlighter for () {}
 
 impl<'r, H: ?Sized + Highlighter> Highlighter for &'r H {
-    fn highlight<'l>(&self, line: &'l str, pos: usize) -> Cow<'l, str> {
-        (**self).highlight(line, pos)
+    fn highlight<'l>(&self, line: &'l str, pos: usize, submit: bool) -> Cow<'l, str> {
+        (**self).highlight(line, pos, submit)
     }
 
     fn highlight_prompt<'b, 's: 'b, 'p: 'b>(
@@ -113,7 +113,7 @@ impl MatchingBracketHighlighter {
 }
 
 impl Highlighter for MatchingBracketHighlighter {
-    fn highlight<'l>(&self, line: &'l str, _pos: usize) -> Cow<'l, str> {
+    fn highlight<'l>(&self, line: &'l str, _pos: usize, _submit: bool) -> Cow<'l, str> {
         if line.len() <= 1 {
             return Borrowed(line);
         }

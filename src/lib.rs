@@ -644,6 +644,7 @@ impl<H: Helper> Editor<H> {
             let (original_mode, term_key_map) = self.term.enable_raw_mode()?;
             let guard = Guard(&original_mode);
             let user_input = self.readline_edit(prompt, initial, &original_mode, term_key_map);
+            
             if self.config.auto_add_history() {
                 if let Ok(ref line) = user_input {
                     self.add_history_entry(line.as_str());
@@ -769,6 +770,8 @@ impl<H: Helper> Editor<H> {
         // Move to end, in case cursor was in the middle of the line, so that
         // next thing application prints goes after the input
         s.edit_move_buffer_end()?;
+
+        s.submit_line()?;
 
         if cfg!(windows) {
             let _ = original_mode; // silent warning

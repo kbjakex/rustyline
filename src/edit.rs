@@ -128,7 +128,7 @@ impl<'out, 'prompt, H: Helper> State<'out, 'prompt, H> {
         }
         if self.highlight_char() {
             let prompt_size = self.prompt_size;
-            self.refresh(self.prompt, prompt_size, true, Info::NoHint)?;
+            self.refresh(self.prompt, prompt_size, true, Info::NoHint, false)?;
         } else {
             self.out.move_cursor(self.layout.cursor, cursor)?;
             self.layout.prompt_size = self.prompt_size;
@@ -158,6 +158,7 @@ impl<'out, 'prompt, H: Helper> State<'out, 'prompt, H> {
         prompt_size: Position,
         default_prompt: bool,
         info: Info<'_>,
+        submit: bool,
     ) -> Result<()> {
         let info = match info {
             Info::NoHint => None,
@@ -183,6 +184,7 @@ impl<'out, 'prompt, H: Helper> State<'out, 'prompt, H> {
             &self.layout,
             &new_layout,
             highlighter,
+            submit,
         )?;
         self.layout = new_layout;
 
@@ -258,25 +260,32 @@ impl<'out, 'prompt, H: Helper> Invoke for State<'out, 'prompt, H> {
 }
 
 impl<'out, 'prompt, H: Helper> Refresher for State<'out, 'prompt, H> {
+    fn submit_line(&mut self) -> Result<()> {
+        let prompt_size = self.prompt_size;
+        self.hint();
+        self.highlight_char();
+        self.refresh(self.prompt, prompt_size, true, Info::Hint, true)        
+    }
+
     fn refresh_line(&mut self) -> Result<()> {
         let prompt_size = self.prompt_size;
         self.hint();
         self.highlight_char();
-        self.refresh(self.prompt, prompt_size, true, Info::Hint)
+        self.refresh(self.prompt, prompt_size, true, Info::Hint, false)
     }
 
     fn refresh_line_with_msg(&mut self, msg: Option<&str>) -> Result<()> {
         let prompt_size = self.prompt_size;
         self.hint = None;
         self.highlight_char();
-        self.refresh(self.prompt, prompt_size, true, Info::Msg(msg))
+        self.refresh(self.prompt, prompt_size, true, Info::Msg(msg), false)
     }
 
     fn refresh_prompt_and_line(&mut self, prompt: &str) -> Result<()> {
         let prompt_size = self.out.calculate_position(prompt, Position::default());
         self.hint();
         self.highlight_char();
-        self.refresh(prompt, prompt_size, false, Info::Hint)
+        self.refresh(prompt, prompt_size, false, Info::Hint, false)
     }
 
     fn doing_insert(&mut self) {
@@ -366,7 +375,7 @@ impl<'out, 'prompt, H: Helper> State<'out, 'prompt, H> {
                     let bits = ch.encode_utf8(&mut self.byte_buffer);
                     self.out.write_and_flush(bits)
                 } else {
-                    self.refresh(self.prompt, prompt_size, true, Info::Hint)
+                    self.refresh(self.prompt, prompt_size, true, Info::Hint, false)
                 }
             } else {
                 self.refresh_line()

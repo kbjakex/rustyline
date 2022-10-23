@@ -233,5 +233,11 @@ pub fn execute<H: Helper>(
             // Ignore the character typed.
         }
     }
+
+    if let Some(validator) = s.helper {
+        if validator.validate_while_typing() {
+            s.validate()?;
+        }
+    }
     Ok(Proceed)
 }
